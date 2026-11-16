@@ -1,0 +1,352 @@
+@import "tailwindcss";
+
+@theme {
+  /* Extra-small breakpoint: phones in the 400px+ range (older/small Androids
+     sit below it, so secondary player controls stay hidden there instead of
+     overflowing the video frame). */
+  --breakpoint-xs: 400px;
+  --color-ink: #0a0515;
+  --color-ink-2: #120a22;
+  --color-ink-3: #1a102e;
+  --color-panel: #160b24;
+  --color-line: rgba(255, 255, 255, 0.06);
+  --color-accent: #8b5cf6;
+  --color-accent-2: #d946ef;
+  --color-gold: #c084fc;
+  --font-display: var(--font-space-grotesk), sans-serif;
+  --font-sans: var(--font-inter), sans-serif;
+  --color-ink3: #1a102e;
+}
+
+html,
+body {
+  scroll-behavior: smooth;
+}
+
+/* ---------------------------------------------------------------------------
+   Fully fluid / auto-sizing layout
+   Works from a 320px phone up to ultrawide desktops without any breakpoint
+   jank: fluid type scale, fluid gutters, fluid card widths, fluid player.
+--------------------------------------------------------------------------- */
+:root {
+  /* 320px → 1920px+ fluid type scale (0.8rem → 1.0rem) */
+  --fs-base: clamp(0.8rem, 0.72rem + 0.25vw, 1rem);
+  --fs-sm: clamp(0.75rem, 0.69rem + 0.2vw, 0.875rem);
+  --fs-lg: clamp(1.05rem, 0.95rem + 0.45vw, 1.25rem);
+  --fs-xl: clamp(1.4rem, 1.1rem + 1.4vw, 2.25rem);
+  --fs-hero: clamp(1.9rem, 1.2rem + 3.2vw, 4rem);
+  /* fluid page gutter */
+  --gutter: clamp(0.75rem, 0.45rem + 1.4vw, 2rem);
+  /* fluid card width */
+  --card-w: clamp(8.5rem, 6.6rem + 6.5vw, 12.5rem);
+  --card-gap: clamp(0.65rem, 0.5rem + 0.6vw, 1.15rem);
+}
+
+html {
+  -webkit-text-size-adjust: 100%; /* stop iOS auto-zoom on rotate */
+  text-size-adjust: 100%;
+}
+
+body {
+  font-size: var(--fs-base);
+  overflow-x: hidden;
+  /* Let mobile browsers use full height for the video player */
+  @supports (height: 100dvh) {
+    min-height: 100dvh;
+  }
+}
+
+/* Fluid page shell used by every page (replaces max-w-[1440px] px-4 lg:px-8) */
+.shell {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  max-width: min(1600px, 100%);
+}
+
+/* Original cover-card sizing: stable poster width in rails, full cell in grids. */
+.card-fluid {
+  width: var(--card-w);
+  max-width: 100%;
+}
+
+/* Horizontal carousel track: fluid card width, comfortable scroll padding */
+.row-track {
+  gap: var(--card-gap);
+  /* scroll padding keeps the next card peeking (affordance) */
+  scroll-padding-left: var(--gutter);
+  padding-inline: max(var(--gutter), env(safe-area-inset-left));
+  margin-inline: calc(var(--gutter) * -1);
+  width: calc(100% + var(--gutter) * 2);
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+}
+.row-track > * {
+  flex: 0 0 var(--card-w);
+  scroll-snap-align: start;
+}
+
+/* Same treatment for the continue-watching rail */
+.rail-track {
+  gap: var(--card-gap);
+  scroll-padding-left: var(--gutter);
+  padding-inline: max(var(--gutter), env(safe-area-inset-left));
+  margin-inline: calc(var(--gutter) * -1);
+  width: calc(100% + var(--gutter) * 2);
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+}
+.rail-track > * {
+  flex: 0 0 clamp(15rem, 60vw, 17rem);
+  scroll-snap-align: start;
+}
+
+/* Touch-friendly minimum targets on coarse pointers */
+@media (pointer: coarse) {
+  button,
+  a[role="button"],
+  .ctl,
+  input[type="range"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  /* Slightly larger caption text on phones */
+  .na-caption {
+    font-size: 1.05em;
+  }
+}
+
+/* Landscape phones: shrink hero so the player stays on screen */
+@media (max-height: 480px) and (orientation: landscape) {
+  .hero-frame {
+    min-height: 60dvh;
+  }
+}
+
+/* Fluid grid that never overflows: repeats as many cards as fit */
+.grid-fluid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--card-w), 1fr));
+  gap: var(--card-gap);
+}
+
+/* Prevent horizontal overflow from long titles/words */
+.break-anywhere {
+  overflow-wrap: anywhere;
+}
+
+/* Safe-area insets for notched phones */
+@supports (padding: env(safe-area-inset-left)) {
+  .shell {
+    padding-left: max(var(--gutter), env(safe-area-inset-left));
+    padding-right: max(var(--gutter), env(safe-area-inset-right));
+  }
+}
+
+body {
+  background-color: #0a0515;
+  color: #e8e8f0;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(1200px 500px at 80% -10%, rgba(139, 92, 246, 0.07), transparent 60%),
+    radial-gradient(900px 420px at -10% 0%, rgba(217, 70, 239, 0.05), transparent 55%);
+}
+
+::selection {
+  background: rgba(139, 92, 246, 0.85);
+  color: #160b24;
+}
+
+/* Slim custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0d061a;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #4a3a6a, #2d1b44);
+  border-radius: 8px;
+  border: 2px solid #0d061a;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #5a4a7a;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility text-gradient {
+  background: linear-gradient(100deg, #c084fc 0%, #8b5cf6 45%, #d946ef 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility glass {
+  background: rgba(22, 11, 36, 0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ken-burns {
+  from {
+    transform: scale(1.02);
+  }
+  to {
+    transform: scale(1.12) translateX(-1.5%);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(139, 92, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-fade-in {
+  animation: fade-in 0.6s ease both;
+}
+.animate-ken-burns {
+  animation: ken-burns 14s ease-out both;
+}
+.skeleton {
+  background: linear-gradient(90deg, #120a22 25%, #2a1a4a 37%, #120a22 63%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+.pulse-ring {
+  animation: pulse-ring 2.4s infinite;
+}
+
+.font-display {
+  font-family: var(--font-space-grotesk), ui-sans-serif, sans-serif;
+}
+
+/* ---- Caption overlay (per translation spec) ----
+   no background box, bold white text (1.1em), 1.5px black outline, drop shadow */
+.na-caption {
+  background: transparent;
+  color: #ffffff;
+  font-weight: 700;
+  /* Fluid size so a 2-line cue always fits, even on a 320px phone */
+  font-size: clamp(0.95rem, 3.4vw, 1.25rem);
+  line-height: 1.3;
+  /* Never let a cue push past the bottom of the frame */
+  max-height: 2.7em;
+  overflow: hidden;
+  text-wrap: balance;
+  padding-inline: 0.35em;
+  text-shadow:
+    -1.5px 0 0 #000,
+    1.5px 0 0 #000,
+    0 -1.5px 0 #000,
+    0 1.5px 0 #000,
+    0.75px 0.75px 0 #000,
+    -0.75px -0.75px 0 #000,
+    0.75px -0.75px 0 #000,
+    -0.75px 0.75px 0 #000,
+    0 3px 8px rgba(0, 0, 0, 0.85);
+}
+
+/* Custom video player control buttons (responsive tap targets) */
+.ctl {
+  display: grid;
+  height: clamp(34px, 9vw, 40px);
+  width: clamp(34px, 9vw, 40px);
+  place-items: center;
+  border-radius: 9999px;
+  color: #e8e8f0;
+  flex: 0 0 auto;
+  transition: background 0.2s, color 0.2s;
+}
+.ctl:hover {
+  background: rgba(139, 92, 246, 0.15);
+}
+
+/* Native cue fallback styling (HLS player tracks) */
+video::cue {
+  background: transparent;
+  background-color: transparent;
+  color: #ffffff;
+  font-weight: 700;
+  line-height: 1.3;
+  text-shadow:
+    -1.5px 0 0 #000,
+    1.5px 0 0 #000,
+    0 -1.5px 0 #000,
+    0 1.5px 0 #000,
+    0 3px 8px rgba(0, 0, 0, 0.85);
+}
+
+/* Slim range input */
+input.na-range {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #8b5cf6, #d946ef);
+  outline: none;
+  cursor: pointer;
+}
+input.na-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 9999px;
+  background: #c084fc;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+input.na-range::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  border-radius: 9999px;
+  background: #c084fc;
+}
