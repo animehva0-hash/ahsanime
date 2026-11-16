@@ -1,6 +1,5 @@
 import type { NextConfig } from "next";
 
-/** Security headers applied to every response. */
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
@@ -39,6 +38,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  output: "standalone",
 };
 
 export default nextConfig;
